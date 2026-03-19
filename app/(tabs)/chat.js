@@ -10,26 +10,32 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useAction, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 export default function ChatScreen() {
   const [chatId, setChatId] = useState(null);
   const [input, setInput] = useState("");
-  const [localMessages, setLocalMessages] = useState(null);
   const [sending, setSending] = useState(false);
   const listRef = useRef(null);
 
-  const sendMessage = useAction(api.chat.sendMessage);
+  const prepareMessage = useMutation(api.chat.prepareMessage);
+  const streamAssistantResponse = useAction(api.chat.streamAssistantResponse);
+  const chats = useQuery(api.chat.listChats);
   const remoteMessages = useQuery(
     api.chat.getMessages,
     chatId ? { chatId } : undefined
   );
 
-  const messages = useMemo(
-    () => localMessages ?? remoteMessages ?? [],
-    [localMessages, remoteMessages]
-  );
+  const messages = remoteMessages ?? [];
+
+  useEffect(() => {
+    // Restore the most recent existing chat on app refresh/reopen.
+    if (!chatId && Array.isArray(chats) && chats.length > 0) {
+      setChatId(chats[0]._id);
+      return;
+    }
+  }, [chatId, chats]);
 
   useEffect(() => {
     if (messages.length && listRef.current) {
@@ -42,13 +48,18 @@ export default function ChatScreen() {
     if (!trimmed || sending) return;
     setSending(true);
     try {
-      const result = await sendMessage({
-        chatId: chatId ?? undefined,
+      const prepared = await prepareMessage({
         content: trimmed,
+        ...(chatId ? { chatId } : {}),
       });
-      setChatId(result.chatId);
-      setLocalMessages(result.messages);
+
+      setChatId(prepared.chatId);
       setInput("");
+
+      await streamAssistantResponse({
+        chatId: prepared.chatId,
+        assistantMessageId: prepared.assistantMessageId,
+      });
     } catch (e) {
       console.error(e);
     } finally {
@@ -91,7 +102,7 @@ export default function ChatScreen() {
       </View>
 
       <View style={styles.messagesContainer}>
-        {remoteMessages === undefined && !localMessages ? (
+        {remoteMessages === undefined || messages.length === 0 ? (
           <View style={styles.center}>
             <Text style={{ color: "#6B7280" }}>
               Start a conversation with Preppi.
