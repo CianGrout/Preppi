@@ -1,0 +1,112 @@
+# Preppi
+
+Barcode-based grocery scanner and recipe assistant: Expo (React Native) app with Convex for data, auth, and AI chat.
+
+## Tech stack
+
+- **Expo SDK 55** / **React Native** (JavaScript)
+- **Convex** – backend, auth (Google), and OpenAI-powered chat
+- **Better Auth** – sessions (Expo + Convex)
+
+## Requirements
+
+- **Node.js** (LTS)
+- **npm**
+- **Android Studio** (for Android) and/or **Xcode** (for iOS, macOS only)
+- **Java 17** (for Android builds; set `JAVA_HOME` if needed)
+
+This app uses native modules (camera, secure store, auth) and **does not run in Expo Go**. You must use a **development build**.
+
+**Linux (Android):** If the Android SDK is installed in a system-wide location (e.g. `/opt/android-sdk`) that is not writable by your user, the build may fail when Gradle tries to download or update components (e.g. NDK). Fix it by making that directory owned by your user:
+
+```bash
+sudo chown -R $USER:$USER /path/to/android-sdk
+```
+
+Use your actual SDK path (e.g. `/opt/android-sdk`). Alternatively, install the SDK in your home directory and set `ANDROID_HOME` / `ANDROID_SDK_ROOT` to that path.
+
+## Setup
+
+```bash
+git clone <repo-url>
+cd Preppi
+npm install
+```
+
+**Environment:**
+
+1. Copy `.env.example` to `.env` in the repo root and set:
+   - `EXPO_PUBLIC_CONVEX_URL` – Convex deployment URL (e.g. `https://xxx.convex.cloud`)
+   - `EXPO_PUBLIC_CONVEX_SITE_URL` – Convex site URL (e.g. `https://xxx.convex.site`)
+
+2. Set Convex env vars (dashboard or `npx convex env set`):  
+   `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `OPENAI_API_KEY`.
+
+3. Run Convex once so the project is linked and generated files exist:
+   ```bash
+   npx convex dev
+   ```
+   (Stop it with Ctrl+C after it’s synced, or leave it running in a separate terminal.)
+
+## How to run the app
+
+Because **Expo Go is not supported**, you run a **development build** on your machine/device.
+
+### 1. Create and install the dev build (first time, or after native changes)
+
+**Android:**
+
+```bash
+npx expo run:android
+```
+
+This builds the native app and installs it on a connected device or emulator. Use a USB-connected phone with USB debugging enabled, or an Android emulator.
+
+**iOS (macOS only):**
+
+```bash
+npx expo run:ios
+```
+
+### 2. Start the dev server
+
+In the project root:
+
+```bash
+npx expo start --dev-client
+```
+
+Open the **Preppi** app on your device/emulator (the dev build you installed). It will connect to Metro. If it doesn’t, shake the device or use the dev menu to enter the Metro URL, or run with tunnel:
+
+```bash
+npx expo start --dev-client --tunnel
+```
+
+### 3. Next times
+
+- Leave `npx convex dev` running in one terminal if you use Convex.
+- Run `npx expo start --dev-client` and open the dev build on device/emulator.
+- Re-run `npx expo run:android` or `npx expo run:ios` only when you change native config (e.g. `app.json`, new native modules) or after pulling such changes.
+
+## Convex CLI
+
+Run from the repo root (where `convex/` lives).
+
+| Command | Description |
+|--------|-------------|
+| `npx convex dev` | Start Convex dev server, sync functions, and generate `convex/_generated/`. Run once to link the project. |
+| `npx convex codegen` | Regenerate `convex/_generated/api` and types only (no dev server). |
+| `npx convex deploy` | Deploy Convex functions to production. |
+| `npx convex env set <NAME> <value>` | Set an environment variable for your Convex deployment. |
+| `npx convex env unset <NAME>` | Remove an environment variable. |
+| `npx convex dashboard` | Open the Convex dashboard in the browser. |
+| `npx convex logs` | Stream deployment logs. |
+
+Before the app can use Convex, run `npx convex dev` at least once so the deployment is linked and generated files exist.
+
+## Barcode / recipe API URL
+
+To use the scanner and recipe screens with your own backend, replace the `http://YOUR IP ADDRESS HERE` placeholders in:
+
+- `app/(tabs)/scan.js`
+- `app/recipe.js`
