@@ -1,19 +1,58 @@
 import { useState } from "react";
-import { Button, Text, View } from "react-native";
+import { Button, Platform, Text, View } from "react-native";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { authClient } from "../src/lib/auth-client";
 
 export default function Login() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  const googleServerClientId =
+    process.env.EXPO_PUBLIC_GOOGLE_SERVER_CLIENT_ID?.trim();
+  const googleIosClientId =
+    process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim();
+
   const signInWithGoogle = async () => {
     setError(null);
     setBusy(true);
     try {
+      if (Platform.OS === "web") {
+        throw new Error(
+          "Google login is configured for native mobile only in this app."
+        );
+      }
+
+      if (Platform.OS === "android" && !googleServerClientId) {
+        throw new Error(
+          "Missing EXPO_PUBLIC_GOOGLE_SERVER_CLIENT_ID in environment."
+        );
+      }
+
+      if (Platform.OS === "ios" && !googleIosClientId) {
+        throw new Error("Missing EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID in environment.");
+      }
+
+      GoogleSignin.configure(
+        Platform.OS === "android"
+          ? { webClientId: googleServerClientId }
+          : { iosClientId: googleIosClientId }
+      );
+
+      await GoogleSignin.hasPlayServices();
+      const signInResult = await GoogleSignin.signIn();
+      const idToken = signInResult?.data?.idToken ?? signInResult?.idToken;
+
+      if (!idToken) {
+        throw new Error(
+          "Google sign-in did not return idToken. Check OAuth client configuration."
+        );
+      }
+
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
-        errorCallbackURL: "/login",
+        idToken: {
+          token: idToken,
+        },
       });
     } catch (e) {
       setError(e?.message ?? String(e));

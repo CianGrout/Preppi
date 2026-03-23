@@ -9,7 +9,13 @@
       "expo-font",
       "expo-image",
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.580560219338-dc8jh46e1h69ha4euplnog9tp28issj3"
+        }
+      ]
     ],
     "android": {
       "softwareKeyboardLayoutMode": "resize",

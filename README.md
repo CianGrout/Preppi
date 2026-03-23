@@ -38,11 +38,18 @@ npm install
 1. Copy `.env.example` to `.env` in the repo root and set:
    - `EXPO_PUBLIC_CONVEX_URL` – Convex deployment URL (e.g. `https://xxx.convex.cloud`)
    - `EXPO_PUBLIC_CONVEX_SITE_URL` – Convex site URL (e.g. `https://xxx.convex.site`)
+   - `EXPO_PUBLIC_GOOGLE_SERVER_CLIENT_ID` – Google OAuth server client id (Android native idToken flow uses this)
+   - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` – Google OAuth iOS client id
 
 2. Set Convex env vars (dashboard or `npx convex env set`):  
    `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `OPENAI_API_KEY`.
 
-3. Run Convex once so the project is linked and generated files exist:
+3. For native Google login, set the iOS URL scheme in `app.json` plugin config for `@react-native-google-signin/google-signin`:
+   - `iosUrlScheme` must be the reversed iOS client id scheme (starts with `com.googleusercontent.apps.`).
+   - Replace the placeholder value in `app.json`.
+   - This app is configured for native mobile login only (no web login flow).
+
+4. Run Convex once so the project is linked and generated files exist:
    ```bash
    npx convex dev
    ```
@@ -98,6 +105,24 @@ npx expo start --dev-client --tunnel
 - Leave `npx convex dev` running in one terminal if you use Convex.
 - Run `npx expo start --dev-client` and open the dev build on device/emulator.
 - Re-run `npx expo run:android` or `npx expo run:ios` only when you change native config (e.g. `app.json`, new native modules) or after pulling such changes.
+
+### Android first-load timeout (dev build)
+
+If Android fails on first launch with a socket timeout and works after reload, force localhost routing:
+
+```bash
+adb reverse --remove-all
+adb reverse tcp:8081 tcp:8081
+npx expo start --dev-client --host localhost --clear
+```
+
+Then launch the app in another terminal with an explicit localhost deep link:
+
+```bash
+adb shell am start -a android.intent.action.VIEW -d "prepiapp://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+```
+
+This avoids stale LAN IP endpoints on first app open.
 
 ## Convex CLI
 

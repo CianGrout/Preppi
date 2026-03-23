@@ -71,62 +71,6 @@ export const deleteChat = mutation({
   },
 });
 
-export const appendUserMessage = mutation({
-  args: {
-    chatId: v.optional(v.id("chats")),
-    content: v.string(),
-  },
-  handler: async (ctx, { chatId, content }) => {
-    const user = await authComponent.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-    const userId = getAuthUserId(user);
-    if (!userId) throw new Error("Unauthorized");
-
-    const now = Date.now();
-    let cid = chatId;
-    if (!cid) {
-      const title = content.trim().slice(0, 40) || "New chat";
-      cid = await ctx.db.insert("chats", {
-        userId,
-        title,
-        createdAt: now,
-      });
-    } else {
-      const chat = await ctx.db.get(cid);
-      if (!chat || chat.userId !== userId) {
-        throw new Error("Chat not found");
-      }
-    }
-
-    await ctx.db.insert("messages", {
-      chatId: cid,
-      role: "user",
-      content,
-      createdAt: now,
-    });
-
-    return { chatId: cid };
-  },
-});
-
-export const appendAssistantMessage = mutation({
-  args: { chatId: v.id("chats"), content: v.string() },
-  handler: async (ctx, { chatId, content }) => {
-    const user = await authComponent.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-    const userId = getAuthUserId(user);
-    if (!userId) throw new Error("Unauthorized");
-    const chat = await ctx.db.get(chatId);
-    if (!chat || chat.userId !== userId) throw new Error("Chat not found");
-    await ctx.db.insert("messages", {
-      chatId,
-      role: "assistant",
-      content,
-      createdAt: Date.now(),
-    });
-  },
-});
-
 export const prepareMessage = mutation({
   args: {
     chatId: v.optional(v.id("chats")),
