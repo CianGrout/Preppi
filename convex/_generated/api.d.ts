@@ -9,10 +9,15 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as barcode from "../barcode.js";
 import type * as chat from "../chat.js";
+import type * as fridge from "../fridge.js";
 import type * as http from "../http.js";
+import type * as recipegen from "../recipegen.js";
 import type * as recipes from "../recipes.js";
+import type * as scanner_logic from "../scanner_logic.js";
 import type * as scans from "../scans.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -22,10 +27,15 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  barcode: typeof barcode;
   chat: typeof chat;
+  fridge: typeof fridge;
   http: typeof http;
+  recipegen: typeof recipegen;
   recipes: typeof recipes;
+  scanner_logic: typeof scanner_logic;
   scans: typeof scans;
+  users: typeof users;
 }>;
 
 /**

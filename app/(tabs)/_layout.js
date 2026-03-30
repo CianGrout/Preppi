@@ -1,16 +1,26 @@
-import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#111827",
+        tabBarActiveTintColor: "#27ae60", 
         tabBarInactiveTintColor: "#9CA3AF",
         tabBarHideOnKeyboard: true,
       }}
     >
+      <Tabs.Screen
+        name="fridge"
+        options={{
+          title: "My Fridge",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="fast-food-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="scan"
         options={{
@@ -20,6 +30,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="chat"
         options={{
@@ -29,6 +40,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="profile"
         options={{
@@ -41,4 +53,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-

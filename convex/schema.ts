@@ -25,5 +25,25 @@ export default defineSchema({
     content: v.string(),
     createdAt: v.number(),
   }).index("by_chat_createdAt", ["chatId", "createdAt"]),
-});
 
+  fridgeItems: defineTable({
+    name: v.string(),
+    userId: v.string(),
+    createdAt: v.number(),
+  }).index("by_userId", ["userId"]),
+  
+  users: defineTable({
+    name: v.string(),
+    tokenIdentifier: v.string(),
+  }).index("by_token", ["tokenIdentifier"]),
+
+  fridge: defineTable({
+    name: v.string(),
+    userId: v.string(),
+  }).index("by_user", ["userId"]),
+
+  barcodes: defineTable({
+    barcode: v.string(),
+    name: v.string(),
+  }).index("by_barcode", ["barcode"]),
+});
