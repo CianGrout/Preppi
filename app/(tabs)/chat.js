@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -10,8 +11,22 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+
+const colors = {
+  background: "#F6F7F3",
+  surface: "#FFFFFF",
+  surfaceMuted: "#EEF2EA",
+  border: "#E2E7DD",
+  text: "#172017",
+  textMuted: "#6C766B",
+  green: "#29C46E",
+  greenDark: "#1E9E57",
+  greenSoft: "#E8F8EE",
+  bubbleUser: "#182019",
+};
 
 export default function ChatScreen() {
   const [chatId, setChatId] = useState(null);
@@ -30,7 +45,6 @@ export default function ChatScreen() {
   const messages = remoteMessages ?? [];
 
   useEffect(() => {
-    // Restore the most recent existing chat on app refresh/reopen.
     if (!chatId && Array.isArray(chats) && chats.length > 0) {
       setChatId(chats[0]._id);
       return;
@@ -72,118 +86,150 @@ export default function ChatScreen() {
     return (
       <View
         style={[
-          styles.bubble,
-          isUser ? styles.bubbleUser : styles.bubbleAssistant,
+          styles.bubbleWrap,
+          isUser ? styles.bubbleWrapUser : styles.bubbleWrapAssistant,
         ]}
       >
-        <Text
+        {!isUser && <View style={styles.assistantDot} />}
+        <View
           style={[
-            styles.bubbleText,
-            isUser ? styles.bubbleTextUser : styles.bubbleTextAssistant,
+            styles.bubble,
+            isUser ? styles.bubbleUser : styles.bubbleAssistant,
           ]}
         >
-          {item.content}
-        </Text>
+          <Text
+            style={[
+              styles.bubbleText,
+              isUser ? styles.bubbleTextUser : styles.bubbleTextAssistant,
+            ]}
+          >
+            {item.content}
+          </Text>
+        </View>
       </View>
     );
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 24}
-    >
-      <View style={styles.header}>
-        <Text style={styles.title}>Chat</Text>
-        <Text style={styles.subtitle}>
-          Ask Preppi anything about recipes or ingredients.
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 78 : 24}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Chat</Text>
+          <Text style={styles.subtitle}>
+            Ask Preppi anything about recipes or ingredients.
+          </Text>
+        </View>
 
-      <View style={styles.messagesContainer}>
-        {remoteMessages === undefined || messages.length === 0 ? (
-          <View style={styles.center}>
-            <Text style={{ color: "#6B7280" }}>
-              Start a conversation with Preppi.
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            ref={listRef}
-            data={messages}
-            keyExtractor={(item) => item._id ?? String(item.createdAt)}
-            renderItem={renderItem}
-            contentContainerStyle={styles.listContent}
-            keyboardShouldPersistTaps="handled"
-            onContentSizeChange={() =>
-              listRef.current?.scrollToEnd({ animated: true })
-            }
+        <View style={styles.messagesContainer}>
+          {remoteMessages === undefined || messages.length === 0 ? (
+            <View style={styles.center}>
+              <View style={styles.emptyCard}>
+                <View style={styles.emptyIcon}>
+                  <Ionicons
+                    name="chatbubble-ellipses-outline"
+                    size={24}
+                    color={colors.greenDark}
+                  />
+                </View>
+                <Text style={styles.emptyTitle}>Start a conversation</Text>
+                <Text style={styles.emptyText}>
+                  Ask for a recipe, ingredient swaps, or help with what is in
+                  your fridge.
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <FlatList
+              ref={listRef}
+              data={messages}
+              keyExtractor={(item) => item._id ?? String(item.createdAt)}
+              renderItem={renderItem}
+              contentContainerStyle={styles.listContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              onContentSizeChange={() =>
+                listRef.current?.scrollToEnd({ animated: true })
+              }
+            />
+          )}
+          {sending && (
+            <View style={styles.typing}>
+              <ActivityIndicator size="small" color={colors.textMuted} />
+              <Text style={styles.typingText}>Thinking...</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.input}
+            value={input}
+            onChangeText={setInput}
+            placeholder="Ask for a recipe, meal idea, or ingredient tip..."
+            placeholderTextColor="#98A397"
+            multiline
           />
-        )}
-        {sending && (
-          <View style={styles.typing}>
-            <ActivityIndicator size="small" color="#6B7280" />
-            <Text style={{ marginLeft: 8, color: "#6B7280" }}>Thinking…</Text>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Ask for a recipe, meal idea, or ingredient tip..."
-          multiline
-        />
-        <Pressable
-          onPress={onSend}
-          disabled={sending || !input.trim()}
-          style={({ pressed }) => [
-            styles.sendButton,
-            (sending || !input.trim()) && styles.sendButtonDisabled,
-            pressed && !sending && input.trim() && styles.sendButtonPressed,
-          ]}
-        >
-          <Text
-            style={[
-              styles.sendButtonText,
-              (sending || !input.trim()) && styles.sendButtonTextDisabled,
+          <Pressable
+            onPress={onSend}
+            disabled={sending || !input.trim()}
+            style={({ pressed }) => [
+              styles.sendButton,
+              (sending || !input.trim()) && styles.sendButtonDisabled,
+              pressed && !sending && input.trim() && styles.sendButtonPressed,
             ]}
           >
-            {sending ? "…" : "Send"}
-          </Text>
-        </Pressable>
-      </View>
-    </KeyboardAvoidingView>
+            <Text
+              style={[
+                styles.sendButtonText,
+                (sending || !input.trim()) && styles.sendButtonTextDisabled,
+              ]}
+            >
+              {sending ? "..." : "Send"}
+            </Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
   },
   header: {
-    paddingTop: 24,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    backgroundColor: "#F9FAFB",
+    paddingTop: 14,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   title: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#111827",
+    fontSize: 34,
+    fontWeight: "800",
+    color: colors.text,
+    letterSpacing: -0.8,
   },
   subtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginTop: 4,
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.textMuted,
+    marginTop: 6,
+    maxWidth: 320,
   },
   messagesContainer: {
     flex: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 8,
   },
   center: {
@@ -191,81 +237,143 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  listContent: {
-    paddingVertical: 8,
+  emptyCard: {
+    width: "100%",
+    backgroundColor: colors.surface,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 28,
+    paddingVertical: 32,
+    alignItems: "center",
+    maxWidth: 360,
   },
-  bubble: {
-    maxWidth: "80%",
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  emptyIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surfaceMuted,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.text,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.textMuted,
+    textAlign: "center",
+  },
+  listContent: {
+    paddingBottom: 10,
+    gap: 10,
+  },
+  bubbleWrap: {
+    flexDirection: "row",
+    alignItems: "flex-end",
     marginVertical: 4,
   },
-  bubbleUser: {
+  bubbleWrapUser: {
     alignSelf: "flex-end",
-    backgroundColor: "#111827",
+  },
+  bubbleWrapAssistant: {
+    alignSelf: "flex-start",
+  },
+  assistantDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.greenSoft,
+    borderWidth: 2,
+    borderColor: colors.green,
+    marginRight: 10,
+    marginBottom: 12,
+  },
+  bubble: {
+    maxWidth: "84%",
+    borderRadius: 22,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+  },
+  bubbleUser: {
+    backgroundColor: colors.bubbleUser,
+    borderBottomRightRadius: 8,
   },
   bubbleAssistant: {
-    alignSelf: "flex-start",
-    backgroundColor: "#E5E7EB",
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderBottomLeftRadius: 8,
   },
   bubbleText: {
     fontSize: 15,
+    lineHeight: 22,
   },
   bubbleTextUser: {
     color: "#FFFFFF",
   },
   bubbleTextAssistant: {
-    color: "#111827",
+    color: colors.text,
   },
   typing: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 4,
+    paddingVertical: 8,
+  },
+  typingText: {
+    marginLeft: 8,
+    color: colors.textMuted,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 104,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: "rgba(246, 247, 243, 0.96)",
+    gap: 10,
   },
   input: {
     flex: 1,
-    minHeight: 40,
-    maxHeight: 100,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#D1D5DB",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
-    backgroundColor: "#FFFFFF",
+    minHeight: 52,
+    maxHeight: 120,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: colors.surface,
+    fontSize: 16,
+    color: colors.text,
   },
   sendButton: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    minHeight: 40,
-    borderRadius: 20,
-    backgroundColor: "#111827",
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    minHeight: 52,
+    borderRadius: 26,
+    backgroundColor: colors.green,
   },
   sendButtonDisabled: {
-    backgroundColor: "#E5E7EB",
+    backgroundColor: "#D7DED5",
   },
   sendButtonPressed: {
-    opacity: 0.85,
+    backgroundColor: colors.greenDark,
   },
   sendButtonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#FFFFFF",
   },
   sendButtonTextDisabled: {
-    color: "#9CA3AF",
+    color: "#8D978D",
   },
 });
-
