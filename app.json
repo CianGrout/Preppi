@@ -10,10 +10,12 @@
       "expo-image",
       "expo-router",
       "expo-web-browser",
+      "expo-web-browser",
       [
         "@react-native-google-signin/google-signin",
         {
-        "iosUrlScheme": "com.googleusercontent.apps.848450236599-e1q2ad4srbvcko9pgtkj2a58cu7v7ic3"        }
+          "iosUrlScheme": "com.googleusercontent.apps.580560219338-dc8jh46e1h69ha4euplnog9tp28issj3"
+        }
       ]
     ],
     "android": {
@@ -25,10 +27,10 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ],
-      "package": "com.cian.prepiapp.v1"
+      "package": "com.anonymous.prepiapp"
     },
     "ios": {
-      "bundleIdentifier": "com.cian.prepiapp.v1"
+      "bundleIdentifier": "com.anonymous.prepiapp"
     }
   }
 }
