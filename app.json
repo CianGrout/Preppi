@@ -10,6 +10,7 @@
       "expo-image",
       "expo-router",
       "expo-web-browser",
+      "expo-web-browser",
       [
         "@react-native-google-signin/google-signin",
         {
@@ -25,10 +26,10 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ],
-      "package": "com.cian.prepiapp.v1"
+      "package": "com.anonymous.prepiapp"
     },
     "ios": {
-      "bundleIdentifier": "com.cian.prepiapp.v1"
+      "bundleIdentifier": "com.anonymous.prepiapp"
     }
   }
 }
