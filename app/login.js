@@ -29,13 +29,24 @@ export default function Login() {
       }
 
       if (Platform.OS === "ios" && !googleIosClientId) {
-        throw new Error("Missing EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID in environment.");
+        throw new Error(
+          "Missing EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID in environment."
+        );
+      }
+
+      if (Platform.OS === "ios" && !googleServerClientId) {
+        throw new Error(
+          "Missing EXPO_PUBLIC_GOOGLE_SERVER_CLIENT_ID in environment."
+        );
       }
 
       GoogleSignin.configure(
         Platform.OS === "android"
           ? { webClientId: googleServerClientId }
-          : { iosClientId: googleIosClientId }
+          : {
+              iosClientId: googleIosClientId,
+              webClientId: googleServerClientId,
+            }
       );
 
       await GoogleSignin.hasPlayServices();
