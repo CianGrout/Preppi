@@ -129,12 +129,31 @@ export default function FridgeScreen() {
         </View>
       </View>
 
+      {groupedItems.length > 0 && (
+        <View style={styles.ctaCard}>
+          <View style={styles.ctaCopy}>
+            <Text style={styles.ctaTitle}>
+              {rawItems.length} item{rawItems.length === 1 ? "" : "s"} ready
+            </Text>
+            <Text style={styles.ctaText}>
+              Build a {selectedMeal.label.toLowerCase()} recipe.
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.generateBtn}
+            onPress={handleGenerateRecipe}
+          >
+            <Text style={styles.generateBtnText}>Get Recipe</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Saved Items</Text>
         <Text style={styles.sectionMeta}>
           {groupedItems.length === 0
             ? "Nothing saved yet"
-            : `${groupedItems.length} item${groupedItems.length === 1 ? "" : "s"}`}
+            : `${groupedItems.length} ${groupedItems.length === 1 ? "item" : "different items"}`}
         </Text>
       </View>
     </View>
@@ -173,30 +192,7 @@ export default function FridgeScreen() {
             </Text>
           </View>
         }
-        ListFooterComponent={
-          groupedItems.length > 0 ? (
-            <View style={styles.ctaCard}>
-              <View style={styles.ctaCopy}>
-                <Text style={styles.ctaTitle}>
-                  {rawItems.length} item{rawItems.length === 1 ? "" : "s"} ready
-                  to cook
-                </Text>
-                <Text style={styles.ctaText}>
-                  Build a {selectedMeal.label.toLowerCase()} recipe from what you
-                  already have.
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.generateBtn}
-                onPress={handleGenerateRecipe}
-              >
-                <Text style={styles.generateBtnText}>Get Recipe</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.listSpacer} />
-          )
-        }
+        ListFooterComponent={<View style={styles.listSpacer} />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -281,6 +277,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginTop: 6,
   },
   sectionTitle: {
     fontSize: 13,
@@ -374,7 +371,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   ctaCard: {
-    marginTop: 8,
     backgroundColor: colors.text,
     borderRadius: 22,
     padding: 18,
